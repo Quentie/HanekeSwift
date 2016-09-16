@@ -373,5 +373,24 @@ extension Cache {
         
         return self.fetch(fetcher: fetcher, formatName: formatName, failure: fail, success: succeed)
     }
+    
+    /**
+     This function extends the original Cache class from Haneke in order to accept a NSURLRequest rather than only a NSURL
+     
+     Reason: We need to be able to "mess" with the User-Agent. We can not use the default iOS User-Agent
+     Otherwise we will not get the correct images, meant for mobile.
+     That is unfortunate IMO, but it's how it works at the moment.
+     
+     Haneke uses the sharedSession of NSURLSession (NSURLSession.sharedSession()) for the requests.
+     Until iOS 9 we could just add the User-Agent to the additionalHTTPHeeders of the sharedSession somehwere else,
+     this is not the case anymore for iOS >= 9 (is that a bug or intended?)
+     
+     So now we create the request outside of Haneke, where we define the httpHeaders ourselves
+     and then instead of fetching a NSURL, we fetch this NSURLRequest with our custom HTTPHeaders
+     */
+    public func fetch(request : NSURLRequest, formatName : String = HanekeGlobals.Cache.OriginalFormatName,  failure fail : Fetch<T>.Failer? = nil, success succeed : Fetch<T>.Succeeder? = nil) -> Fetch<T> {
+        let fetcher = NetworkRequestFetcher<T>(request: request)
+        return self.fetch(fetcher: fetcher, formatName: formatName, failure: fail, success: succeed)
+    }
 }
 

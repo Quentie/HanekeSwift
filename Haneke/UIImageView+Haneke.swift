@@ -22,6 +22,11 @@ public extension UIImageView {
         self.hnk_setImageFromFetcher(fetcher: fetcher, placeholder: placeholder, format: format, failure: fail, success: succeed)
     }
     
+    public func hnk_setImageFromRequest(request: NSURLRequest, placeholder : UIImage? = nil, format : Format<UIImage>? = nil, failure fail : ((Error?) -> ())? = nil, success succeed : ((UIImage) -> ())? = nil) {
+        let fetcher = NetworkRequestFetcher<UIImage>(request: request)
+        self.hnk_setImageFromFetcher(fetcher: fetcher, placeholder: placeholder, format: format, failure: fail, success: succeed)
+    }
+    
     public func hnk_setImage( image: @autoclosure @escaping () -> UIImage, key: String, placeholder : UIImage? = nil, format : Format<UIImage>? = nil, success succeed : ((UIImage) -> ())? = nil) {
         let fetcher = SimpleFetcher<UIImage>(key: key, value: image)
         self.hnk_setImageFromFetcher(fetcher: fetcher, placeholder: placeholder, format: format, success: succeed)
