@@ -60,7 +60,7 @@ public class NetworkFetcher<T : DataConvertible> : Fetcher<T> {
     
     // MARK: Private
     
-    internal func onReceiveData(data: Data!, response: URLResponse!, error: Error?, failure fail: @escaping ((Error?) -> ()), success succeed: @escaping (T.Result) -> ()) {
+    internal func onReceiveData(data: Data?, response: URLResponse?, error: Error?, failure fail: @escaping ((Error?) -> ()), success succeed: @escaping (T.Result) -> ()) {
 
         if cancelled { return }
         
@@ -80,6 +80,13 @@ public class NetworkFetcher<T : DataConvertible> : Fetcher<T> {
             let description = HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)
             self.failWithCode(code: .InvalidStatusCode, localizedDescription: description, failure: fail)
             return
+        }
+
+        guard let data = data,
+            let response = response else {
+                let description = NSLocalizedString("Request received no data or empty response", comment: "Error description")
+                self.failWithCode(code: .MissingData, localizedDescription: description, failure: fail)
+                return
         }
 
         if !response.hnk_validateLengthOfData(data: data) {

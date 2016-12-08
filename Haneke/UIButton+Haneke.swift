@@ -26,7 +26,7 @@ public extension UIButton {
         self.hnk_setImageFromFetcher(fetcher: fetcher, state: state, placeholder: placeholder, format: format, failure: fail, success: succeed)
     }
     
-    public func hnk_setImageFromRequest(request : NSURLRequest, state : UIControlState = .normal, placeholder : UIImage? = nil, format : Format<UIImage>? = nil, failure fail: ((Error?) -> ())? = nil, success succeed : ((UIImage) -> ())? = nil) {
+    public func hnk_setImageFromRequest(request : URLRequest, state : UIControlState = .normal, placeholder : UIImage? = nil, format : Format<UIImage>? = nil, failure fail: ((Error?) -> ())? = nil, success succeed : ((UIImage) -> ())? = nil) {
         let fetcher = NetworkRequestFetcher<UIImage>(request: request)
         self.hnk_setImageFromFetcher(fetcher: fetcher, state: state, placeholder: placeholder, format: format, failure: fail, success: succeed)
     }
@@ -64,7 +64,7 @@ public extension UIButton {
     // MARK: Internal Image
     
     // See: http://stackoverflow.com/questions/25907421/associating-swift-things-with-nsobject-instances
-    var hnk_imageFetcher : Fetcher<UIImage>! {
+    var hnk_imageFetcher: Fetcher<UIImage>? {
         get {
             let wrapper = objc_getAssociatedObject(self, &HanekeGlobals.UIKit.SetImageFetcherKey) as? ObjectWrapper
             let fetcher = wrapper?.valueHaneke as? Fetcher<UIImage>
@@ -176,7 +176,7 @@ public extension UIButton {
     // MARK: Internal Background image
     
     // See: http://stackoverflow.com/questions/25907421/associating-swift-things-with-nsobject-instances
-    var hnk_backgroundImageFetcher : Fetcher<UIImage>! {
+    var hnk_backgroundImageFetcher : Fetcher<UIImage>? {
         get {
             let wrapper = objc_getAssociatedObject(self, &HanekeGlobals.UIKit.SetBackgroundImageFetcherKey) as? ObjectWrapper
             let fetcher = wrapper?.valueHaneke as? Fetcher<UIImage>

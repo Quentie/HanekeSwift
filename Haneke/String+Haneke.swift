@@ -15,9 +15,12 @@ extension String {
         let charactersToLeaveUnescaped = " \\" as NSString as CFString // TODO: Add more characters that are valid in paths but not in URLs
         let legalURLCharactersToBeEscaped = "/:" as NSString as CFString
         let encoding = CFStringBuiltInEncodings.UTF8.rawValue
-        let escapedPath = CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, originalString, charactersToLeaveUnescaped, legalURLCharactersToBeEscaped, encoding)!
-        let escapedPathNSString = escapedPath as NSString
-        return escapedPathNSString as String 
+        if let escapedPath = CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, originalString, charactersToLeaveUnescaped, legalURLCharactersToBeEscaped, encoding) {
+            return escapedPath as String
+        }
+        else {
+            return self
+        }
     }
     
     func MD5String() -> String {

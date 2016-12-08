@@ -22,7 +22,7 @@ public extension UIImageView {
         self.hnk_setImageFromFetcher(fetcher: fetcher, placeholder: placeholder, format: format, failure: fail, success: succeed)
     }
     
-    public func hnk_setImageFromRequest(request: NSURLRequest, placeholder : UIImage? = nil, format : Format<UIImage>? = nil, failure fail : ((Error?) -> ())? = nil, success succeed : ((UIImage) -> ())? = nil) {
+    public func hnk_setImageFromRequest(request: URLRequest, placeholder : UIImage? = nil, format : Format<UIImage>? = nil, failure fail : ((Error?) -> ())? = nil, success succeed : ((UIImage) -> ())? = nil) {
         let fetcher = NetworkRequestFetcher<UIImage>(request: request)
         self.hnk_setImageFromFetcher(fetcher: fetcher, placeholder: placeholder, format: format, failure: fail, success: succeed)
     }
@@ -67,7 +67,7 @@ public extension UIImageView {
     // MARK: Internal
     
     // See: http://stackoverflow.com/questions/25907421/associating-swift-things-with-nsobject-instances
-    var hnk_fetcher : Fetcher<UIImage>! {
+    var hnk_fetcher : Fetcher<UIImage>? {
         get {
             let wrapper = objc_getAssociatedObject(self, &HanekeGlobals.UIKit.SetImageFetcherKey) as? ObjectWrapper
             let fetcher = wrapper?.valueHaneke  as? Fetcher<UIImage>

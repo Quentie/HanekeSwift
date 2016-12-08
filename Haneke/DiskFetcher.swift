@@ -54,11 +54,20 @@ public class DiskFetcher<T : DataConvertible> : Fetcher<T> {
         if self.cancelled {
             return
         }
-        
-        let data : Data
+
+        guard let url = URL(string:self.path) else {
+            DispatchQueue.main.async {
+                if self.cancelled {
+                    return
+                }
+                fail(NSError(domain: HanekeGlobals.Domain, code: -1, userInfo: [NSLocalizedDescriptionKey: "Unable to create URL from path \(self.path)"]))
+            }
+            return
+        }
+
+        let data: Data
         do {
-            
-            data = try Data(contentsOf: URL(string:self.path)!, options: Data.ReadingOptions())
+            data = try Data(contentsOf: url, options: Data.ReadingOptions())
         } catch {
              DispatchQueue.main.async{
                 if self.cancelled {

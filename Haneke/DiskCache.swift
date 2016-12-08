@@ -9,7 +9,7 @@
 import Foundation
 
 public class DiskCache {
-    
+
     public class func basePath() -> String {
         let cachesPath = NSSearchPathForDirectoriesInDomains(FileManager.SearchPathDirectory.cachesDirectory, FileManager.SearchPathDomainMask.userDomainMask, true)[0]
         let hanekePathComponent = HanekeGlobals.Domain
@@ -17,7 +17,7 @@ public class DiskCache {
         // TODO: Do not recaculate basePath value
         return basePath
     }
-    
+
     public let path: String
 
     public var size : UInt64 = 0
@@ -35,7 +35,7 @@ public class DiskCache {
         let cacheQueue = DispatchQueue(label: queueName)
         return cacheQueue
     }()
-    
+
     public init(path: String, capacity: UInt64 = UINT64_MAX) {
         self.path = path
         self.capacity = capacity
@@ -44,22 +44,30 @@ public class DiskCache {
             self.controlCapacity()
         })
     }
-    
+
     public func setData( getData: @autoclosure @escaping () -> Data?, key: String) {
         self.cacheQueue.async(execute:{
             if let data = getData() {
                 self.setDataSync(data: data, key: key)
             } else {
-              Log.error(message: "Failed to get data for key \(key)")
+                Log.error(message: "Failed to get data for key \(key)")
             }
         })
     }
-    
+
     public func fetchData(key: String, failure fail: ((Error?) -> ())? = nil, success succeed: @escaping(Data) -> ()) {
         self.cacheQueue.async {
             let path = self.pathForKey(key: key)
+            guard let url = URL(string:path) else {
+                if let block = fail {
+                    DispatchQueue.main.async {
+                        block(NSError(domain: HanekeGlobals.Domain, code: -1, userInfo: [NSLocalizedDescriptionKey: "Unable to create URL from path \(path)"]))
+                    }
+                }
+                return
+            }
             do {
-                let data = try Data(contentsOf: URL(string:path)!, options: Data.ReadingOptions())
+                let data = try Data(contentsOf: url, options: Data.ReadingOptions())
                 DispatchQueue.main.async {
                     succeed(data)
                 }
@@ -80,7 +88,7 @@ public class DiskCache {
             self.removeFileAtPath(path: path)
         })
     }
-    
+
     public func removeAllData() {
         let fileManager = FileManager.default
         let cachePath = self.path
@@ -92,7 +100,7 @@ public class DiskCache {
                     do {
                         try fileManager.removeItem(atPath: path)
                     } catch {
-                       Log.error(message: "Failed to remove path \(path)", error: error as NSError)
+                        Log.error(message: "Failed to remove path \(path)", error: error as NSError)
                     }
                 }
                 self.calculateSize()
@@ -122,9 +130,9 @@ public class DiskCache {
         let keyPath = (self.path as NSString).appendingPathComponent(filename)
         return keyPath
     }
-    
+
     // MARK: Private
-    
+
     private func calculateSize() {
         let fileManager = FileManager.default
         size = 0
@@ -135,24 +143,26 @@ public class DiskCache {
                 let path = (cachePath as NSString).appendingPathComponent(pathComponent)
                 do {
                     let attributes = try fileManager.attributesOfItem(atPath: path) as? NSDictionary
-                    size += (attributes?.fileSize())!
+                    if let attrSize = attributes?.fileSize() {
+                        size += attrSize
+                    }
                 } catch {
                     Log.error(message: "Failed to read file size of \(path)", error: error as NSError)
                 }
             }
 
         } catch {
-           Log.error(message: "Failed to list directory", error: error as NSError)
+            Log.error(message: "Failed to list directory", error: error as NSError)
         }
     }
-    
+
     private func controlCapacity() {
         if self.size <= self.capacity { return }
-        
+
         let fileManager = FileManager.default
         let cachePath = self.path
         fileManager.enumerateContentsOfDirectoryAtPath(path: cachePath, orderedByProperty: URLResourceKey.contentModificationDateKey.rawValue, ascending: true) { (URL : NSURL, _, stop : inout Bool) -> Void in
-            
+
             if let path = URL.path {
                 self.removeFileAtPath(path: path)
 
@@ -160,7 +170,7 @@ public class DiskCache {
             }
         }
     }
-    
+
     private func setDataSync(data: Data, key: String) {
         let path = self.pathForKey(key: key)
         let fileManager = FileManager.default
@@ -169,16 +179,16 @@ public class DiskCache {
         do {
             try data.write(to: URL.init(fileURLWithPath: path)) // .write(toFile: path, options: NSData.WritingOptions.atomicWrite)
         } catch {
-           Log.error(message: "Failed to write key \(key)", error: error as NSError)
+            Log.error(message: "Failed to write key \(key)", error: error as NSError)
         }
-        
+
         if let attributes = previousAttributes {
             self.size -= (attributes.fileSize())
         }
         self.size += UInt64(data.count)
         self.controlCapacity()
     }
-    
+
     private func updateDiskAccessDateAtPath(path: String) -> Bool {
         let fileManager = FileManager.default
         let now = Date()
@@ -190,7 +200,7 @@ public class DiskCache {
             return false
         }
     }
-    
+
     private func removeFileAtPath(path: String) {
         let fileManager = FileManager.default
         do {
@@ -205,9 +215,9 @@ public class DiskCache {
         } catch {
             let castedError = error as NSError
             if isNoSuchFileError(error: castedError) {
-               Log.debug(message: "File not found", error: castedError)
+                Log.debug(message: "File not found", error: castedError)
             } else {
-              Log.error(message: "Failed to remove file", error: castedError)
+                Log.error(message: "Failed to remove file", error: castedError)
             }
         }
     }

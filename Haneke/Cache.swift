@@ -244,9 +244,9 @@ public class Cache<T: DataConvertible> where T.Result == T, T : DataRepresentabl
     }
     
     private func decompressedImageIfNeeded(value : T) -> T {
-        if let image = value as? UIImage {
-            let decompressedImage = image.hnk_decompressedImage() as? T
-            return decompressedImage!
+        if let image = value as? UIImage,
+            let decompressedImage = image.hnk_decompressedImage() as? T {
+            return decompressedImage
         }
         return value
     }
@@ -286,7 +286,7 @@ public class Cache<T: DataConvertible> where T.Result == T, T : DataRepresentabl
 
 public class BackgroundNetworkFetcher<T : DataConvertible> : NetworkFetcher<T>,URLSessionDataDelegate {
     
-    lazy var bgSession : URLSession! = ({
+    lazy var bgSession : URLSession = ({
         let sessionConfig = URLSessionConfiguration.background(withIdentifier: "com.say.bgt.\(UUID().uuidString)")
         //sessionConfig.discretionary = true
         let session = Foundation.URLSession(configuration: sessionConfig,delegate: self,delegateQueue: nil)
@@ -388,7 +388,7 @@ extension Cache {
      So now we create the request outside of Haneke, where we define the httpHeaders ourselves
      and then instead of fetching a NSURL, we fetch this NSURLRequest with our custom HTTPHeaders
      */
-    public func fetch(request : NSURLRequest, formatName : String = HanekeGlobals.Cache.OriginalFormatName,  failure fail : Fetch<T>.Failer? = nil, success succeed : Fetch<T>.Succeeder? = nil) -> Fetch<T> {
+    public func fetch(request : URLRequest, formatName : String = HanekeGlobals.Cache.OriginalFormatName,  failure fail : Fetch<T>.Failer? = nil, success succeed : Fetch<T>.Succeeder? = nil) -> Fetch<T> {
         let fetcher = NetworkRequestFetcher<T>(request: request)
         return self.fetch(fetcher: fetcher, formatName: formatName, failure: fail, success: succeed)
     }
