@@ -9,7 +9,7 @@
 import Foundation
 
 extension HanekeGlobals {
-
+    
     // It'd be better to define this in the DiskFetcher class but Swift doesn't allow to declare an enum in a generic type
     public struct DiskFetcher {
         
@@ -36,7 +36,7 @@ public class DiskFetcher<T : DataConvertible> : Fetcher<T> {
     
     public override func fetch(failure fail: @escaping ((Error?) -> ()), success succeed: @escaping (T.Result) -> ()) {
         self.cancelled = false
-
+        
         DispatchQueue.global(qos: DispatchQoS.QoSClass.default).async { [weak self] in
             if let strongSelf = self {
                 strongSelf.privateFetch(failure: fail, success: succeed)
@@ -55,12 +55,21 @@ public class DiskFetcher<T : DataConvertible> : Fetcher<T> {
             return
         }
         
-        let data : Data
+        guard let url = URL(string:self.path) else {
+            DispatchQueue.main.async {
+                if self.cancelled {
+                    return
+                }
+                fail(NSError(domain: HanekeGlobals.Domain, code: -1, userInfo: [NSLocalizedDescriptionKey: "Unable to create URL from path \(self.path)"]))
+            }
+            return
+        }
+        
+        let data: Data
         do {
-            
-            data = try Data(contentsOf: URL(string:self.path)!, options: Data.ReadingOptions())
+            data = try Data(contentsOf: url, options: Data.ReadingOptions())
         } catch {
-             DispatchQueue.main.async{
+            DispatchQueue.main.async{
                 if self.cancelled {
                     return
                 }

@@ -69,7 +69,7 @@ public class Fetch<T> {
             return true
         default:
             return false
-            }
+        }
     }
     
     var hasSucceeded : Bool {

@@ -17,7 +17,7 @@ public struct Format<T> {
     public var transform : ((T) -> (T))?
     
     public var convertToData : ((T) -> Data)?
-
+    
     public init(name: String, diskCapacity : UInt64 = UINT64_MAX, transform: ((T) -> (T))? = nil) {
         self.name = name
         self.diskCapacity = diskCapacity
@@ -35,7 +35,7 @@ public struct Format<T> {
     var isIdentity : Bool {
         return self.transform == nil
     }
-
+    
 }
 
 public struct ImageResizer {

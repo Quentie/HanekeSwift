@@ -9,7 +9,7 @@
 import Foundation
 
 extension HTTPURLResponse {
-
+    
     func hnk_isValidStatusCode() -> Bool {
         switch self.statusCode {
         case 200...201:
@@ -18,5 +18,5 @@ extension HTTPURLResponse {
             return false
         }
     }
-
+    
 }

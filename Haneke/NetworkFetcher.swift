@@ -12,7 +12,7 @@ extension HanekeGlobals {
     
     // It'd be better to define this in the NetworkFetcher class but Swift doesn't allow to declare an enum in a generic type
     public struct NetworkFetcher {
-
+        
         public enum ErrorCode : Int {
             case InvalidData = -400
             case MissingData = -401
@@ -29,7 +29,7 @@ public class NetworkFetcher<T : DataConvertible> : Fetcher<T> {
     
     public init(URL : Foundation.URL) {
         self.URL = URL
-
+        
         let key =  URL.absoluteString
         super.init(key: key)
     }
@@ -60,8 +60,8 @@ public class NetworkFetcher<T : DataConvertible> : Fetcher<T> {
     
     // MARK: Private
     
-    internal func onReceiveData(data: Data!, response: URLResponse!, error: Error?, failure fail: @escaping ((Error?) -> ()), success succeed: @escaping (T.Result) -> ()) {
-
+    internal func onReceiveData(data: Data?, response: URLResponse?, error: Error?, failure fail: @escaping ((Error?) -> ()), success succeed: @escaping (T.Result) -> ()) {
+        
         if cancelled { return }
         
         let URL = self.URL
@@ -71,7 +71,7 @@ public class NetworkFetcher<T : DataConvertible> : Fetcher<T> {
             if  error.code == URLError.cancelled  {
                 return }
             
-           Log.debug(message: "Request \(error.failureURLString ?? URL.absoluteString) failed", error: error)
+            Log.debug(message: "Request \(error.failureURLString ?? URL.absoluteString) failed", error: error)
             DispatchQueue.main.async { fail(error) }
             return
         }
@@ -81,7 +81,14 @@ public class NetworkFetcher<T : DataConvertible> : Fetcher<T> {
             self.failWithCode(code: .InvalidStatusCode, localizedDescription: description, failure: fail)
             return
         }
-
+        
+        guard let data = data,
+            let response = response else {
+                let description = NSLocalizedString("Request received no data or empty response", comment: "Error description")
+                self.failWithCode(code: .MissingData, localizedDescription: description, failure: fail)
+                return
+        }
+        
         if !response.hnk_validateLengthOfData(data: data) {
             let localizedFormat = NSLocalizedString("Request expected %ld bytes and received %ld bytes", comment: "Error description")
             let description = String(format:localizedFormat, response.expectedContentLength, data.count)
@@ -95,9 +102,9 @@ public class NetworkFetcher<T : DataConvertible> : Fetcher<T> {
             self.failWithCode(code: .InvalidData, localizedDescription: description, failure: fail)
             return
         }
-
-         DispatchQueue.main.async  { succeed(value) }
-
+        
+        DispatchQueue.main.async  { succeed(value) }
+        
     }
     
     internal func failWithCode(code: HanekeGlobals.NetworkFetcher.ErrorCode, localizedDescription: String, failure fail: @escaping ((Error?) -> ())) {

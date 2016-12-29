@@ -20,12 +20,12 @@ public extension HanekeGlobals {
             }
             
             var format = Format<UIImage>(name: name,
-                diskCapacity: HanekeGlobals.UIKit.DefaultFormat.DiskCapacity) {
-                    let resizer = ImageResizer(size:size,
-                        scaleMode: scaleMode,
-                        allowUpscaling: allowUpscaling,
-                        compressionQuality: HanekeGlobals.UIKit.DefaultFormat.CompressionQuality)
-                    return resizer.resizeImage(image: $0)
+                                         diskCapacity: HanekeGlobals.UIKit.DefaultFormat.DiskCapacity) {
+                                            let resizer = ImageResizer(size:size,
+                                                                       scaleMode: scaleMode,
+                                                                       allowUpscaling: allowUpscaling,
+                                                                       compressionQuality: HanekeGlobals.UIKit.DefaultFormat.CompressionQuality)
+                                            return resizer.resizeImage(image: $0)
             }
             format.convertToData = {(image : UIImage) -> Data in
                 image.hnk_data(compressionQuality: HanekeGlobals.UIKit.DefaultFormat.CompressionQuality)

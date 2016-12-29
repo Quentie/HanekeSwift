@@ -10,7 +10,7 @@ import UIKit
 
 // See: http://stackoverflow.com/questions/25915306/generic-closure-in-protocol
 public class Fetcher<T : DataConvertible> : NSObject {
-
+    
     public let key: String
     
     public init(key: String) {

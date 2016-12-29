@@ -9,9 +9,9 @@
 import Foundation
 
 extension FileManager {
-
+    
     func enumerateContentsOfDirectoryAtPath(path: String, orderedByProperty property: String, ascending: Bool, usingBlock block: (NSURL, Int, inout Bool) -> Void ) {
-
+        
         let directoryURL = NSURL(fileURLWithPath: path)
         do {
             let contents = try self.contentsOfDirectory(at: directoryURL as URL, includingPropertiesForKeys: [URLResourceKey(rawValue: property)], options: FileManager.DirectoryEnumerationOptions())
@@ -54,7 +54,7 @@ extension FileManager {
             }
             
         } catch {
-           Log.error(message: "Failed to list directory", error: error as NSError)
+            Log.error(message: "Failed to list directory", error: error as NSError)
         }
     }
     

@@ -24,7 +24,7 @@ public struct Shared {
         return Static.cache
     }
     
-
+    
     public static var dataCache : Cache<Data> {
         struct Static {
             static let name = "shared-data"

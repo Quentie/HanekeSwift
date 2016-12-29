@@ -12,9 +12,9 @@ public extension UIImageView {
     
     public var hnk_format : Format<UIImage> {
         let viewSize = self.bounds.size
-            assert(viewSize.width > 0 && viewSize.height > 0, "[\(Mirror(reflecting: self).description) \(#function)]: UImageView size is zero. Set its frame, call sizeToFit or force layout first.")
-            let scaleMode = self.hnk_scaleMode
-            return HanekeGlobals.UIKit.formatWithSize(size: viewSize, scaleMode: scaleMode)
+        assert(viewSize.width > 0 && viewSize.height > 0, "[\(Mirror(reflecting: self).description) \(#function)]: UImageView size is zero. Set its frame, call sizeToFit or force layout first.")
+        let scaleMode = self.hnk_scaleMode
+        return HanekeGlobals.UIKit.formatWithSize(size: viewSize, scaleMode: scaleMode)
     }
     
     public func hnk_setImageFromURL(URL: URL, placeholder : UIImage? = nil, format : Format<UIImage>? = nil, failure fail : ((Error?) -> ())? = nil, success succeed : ((UIImage) -> ())? = nil) {
@@ -22,7 +22,7 @@ public extension UIImageView {
         self.hnk_setImageFromFetcher(fetcher: fetcher, placeholder: placeholder, format: format, failure: fail, success: succeed)
     }
     
-    public func hnk_setImageFromRequest(request: NSURLRequest, placeholder : UIImage? = nil, format : Format<UIImage>? = nil, failure fail : ((Error?) -> ())? = nil, success succeed : ((UIImage) -> ())? = nil) {
+    public func hnk_setImageFromRequest(request: URLRequest, placeholder : UIImage? = nil, format : Format<UIImage>? = nil, failure fail : ((Error?) -> ())? = nil, success succeed : ((UIImage) -> ())? = nil) {
         let fetcher = NetworkRequestFetcher<UIImage>(request: request)
         self.hnk_setImageFromFetcher(fetcher: fetcher, placeholder: placeholder, format: format, failure: fail, success: succeed)
     }
@@ -39,11 +39,11 @@ public extension UIImageView {
     
     
     public func hnk_setImageFromFetcher(fetcher : Fetcher<UIImage>,
-        placeholder : UIImage? = nil,
-        format : Format<UIImage>? = nil,
-        failure fail : ((Error?) -> ())? = nil,
-        success succeed : ((UIImage) -> ())? = nil) {
-
+                                        placeholder : UIImage? = nil,
+                                        format : Format<UIImage>? = nil,
+                                        failure fail : ((Error?) -> ())? = nil,
+                                        success succeed : ((UIImage) -> ())? = nil) {
+        
         self.hnk_cancelSetImage()
         
         self.hnk_fetcher = fetcher
@@ -51,7 +51,7 @@ public extension UIImageView {
         let didSetImage = self.hnk_fetchImageForFetcher(fetcher: fetcher, format: format, failure: fail, success: succeed)
         
         if didSetImage { return }
-     
+        
         if let placeholder = placeholder {
             self.image = placeholder
         }
@@ -67,7 +67,7 @@ public extension UIImageView {
     // MARK: Internal
     
     // See: http://stackoverflow.com/questions/25907421/associating-swift-things-with-nsobject-instances
-    var hnk_fetcher : Fetcher<UIImage>! {
+    var hnk_fetcher : Fetcher<UIImage>? {
         get {
             let wrapper = objc_getAssociatedObject(self, &HanekeGlobals.UIKit.SetImageFetcherKey) as? ObjectWrapper
             let fetcher = wrapper?.valueHaneke  as? Fetcher<UIImage>
@@ -92,10 +92,10 @@ public extension UIImageView {
             return .AspectFill
         case .redraw, .center, .top, .bottom, .left, .right, .topLeft, .topRight, .bottomLeft, .bottomRight:
             return .None
-            }
+        }
     }
-
-
+    
+    
     
     func hnk_fetchImageForFetcher(fetcher : Fetcher<UIImage>, format : Format<UIImage>? = nil, failure fail : ((Error?) -> ())?, success succeed : ((UIImage) -> ())?) -> Bool {
         let cache = Shared.imageCache

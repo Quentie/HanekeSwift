@@ -9,17 +9,18 @@
 import UIKit
 
 extension UIImage {
-
+    
     func hnk_imageByScalingToSize(toSize: CGSize) -> UIImage {
         UIGraphicsBeginImageContextWithOptions(toSize, !hnk_hasAlpha(), 0.0)
         draw(in: CGRect(x: 0, y: 0,width: toSize.width, height: toSize.height))
         let resizedImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
-        return resizedImage!
+        return resizedImage ?? self
     }
-
+    
     func hnk_hasAlpha() -> Bool {
-        let alpha = self.cgImage!.alphaInfo
+        guard let cgimg = self.cgImage else { return false }
+        let alpha = cgimg.alphaInfo
         switch alpha {
         case .first, .last, .premultipliedFirst, .premultipliedLast, .alphaOnly:
             return true
@@ -28,16 +29,18 @@ extension UIImage {
         }
     }
     
-    func hnk_data(compressionQuality: Float = 1.0) -> Data! {
+    func hnk_data(compressionQuality: Float = 1.0) -> Data {
         let hasAlpha = self.hnk_hasAlpha()
-        let data = hasAlpha ? UIImagePNGRepresentation(self) : UIImageJPEGRepresentation(self, CGFloat(compressionQuality))
-        return data
+        if let data = hasAlpha ? UIImagePNGRepresentation(self) : UIImageJPEGRepresentation(self, CGFloat(compressionQuality)) {
+            return data
+        }
+        return Data(capacity: 0)
     }
     
-    func hnk_decompressedImage() -> UIImage! {
-        let originalImageRef = self.cgImage
-        let originalBitmapInfo = originalImageRef!.bitmapInfo
-        let alphaInfo = originalImageRef!.alphaInfo
+    func hnk_decompressedImage() -> UIImage? {
+        guard let originalImageRef = self.cgImage else { return self }
+        let originalBitmapInfo = originalImageRef.bitmapInfo
+        let alphaInfo = originalImageRef.alphaInfo
         
         // See: http://stackoverflow.com/questions/23723564/which-cgimagealphainfo-should-we-use
         var bitmapInfo = originalBitmapInfo
@@ -54,10 +57,10 @@ extension UIImage {
         
         let colorSpace = CGColorSpaceCreateDeviceRGB()
         let pixelSize = CGSize(width: self.size.width * self.scale, height: self.size.height * self.scale)
-        guard let context = CGContext(data: nil, width: Int(ceil(pixelSize.width)), height: Int(ceil(pixelSize.height)), bitsPerComponent: originalImageRef!.bitsPerComponent, bytesPerRow: 0, space: colorSpace, bitmapInfo: bitmapInfo.rawValue) else {
+        guard let context = CGContext(data: nil, width: Int(ceil(pixelSize.width)), height: Int(ceil(pixelSize.height)), bitsPerComponent: originalImageRef.bitsPerComponent, bytesPerRow: 0, space: colorSpace, bitmapInfo: bitmapInfo.rawValue) else {
             return self
         }
-
+        
         let imageRect = CGRect(x: 0, y: 0, width: pixelSize.width,height: pixelSize.height)
         UIGraphicsPushContext(context)
         
@@ -77,5 +80,5 @@ extension UIImage {
         let image = UIImage(cgImage: decompressedImageRef, scale:scale, orientation:UIImageOrientation.up)
         return image
     }
-
+    
 }

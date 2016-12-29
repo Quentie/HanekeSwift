@@ -17,7 +17,7 @@ public protocol DataConvertible {
 
 public protocol DataRepresentable {
     
-    func asData() -> Data!
+    func asData() -> Data
 }
 
 private let imageSync = NSLock()
@@ -25,7 +25,7 @@ private let imageSync = NSLock()
 extension UIImage : DataConvertible, DataRepresentable {
     
     public typealias Result = UIImage
-
+    
     // HACK: UIImage data initializer is no longer thread safe. See: https://github.com/AFNetworking/AFNetworking/issues/2572#issuecomment-115854482
     static func safeImageWithData(data:Data) -> Result? {
         imageSync.lock()
@@ -39,7 +39,7 @@ extension UIImage : DataConvertible, DataRepresentable {
         return image
     }
     
-    public func asData() -> Data! {
+    public func asData() -> Data {
         return self.hnk_data()
     }
     
@@ -54,8 +54,11 @@ extension String : DataConvertible, DataRepresentable {
         return string as? Result
     }
     
-    public func asData() -> Data! {
-        return self.data(using: String.Encoding.utf8)
+    public func asData() -> Data {
+        if let data = self.data(using: String.Encoding.utf8) {
+            return data
+        }
+        return Data(capacity: 0)
     }
     
 }
@@ -68,7 +71,7 @@ extension Data : DataConvertible, DataRepresentable {
         return data as Result
     }
     
-    public func asData() -> Data! {
+    public func asData() -> Data {
         return self
     }
     
@@ -97,16 +100,21 @@ public enum JSON : DataConvertible, DataRepresentable {
         }
     }
     
-    public func asData() -> Data! {
+    public func asData() -> Data {
         switch (self) {
         case .Dictionary(let dictionary):
-            return try? JSONSerialization.data(withJSONObject: dictionary, options: JSONSerialization.WritingOptions())
+            if let data = try? JSONSerialization.data(withJSONObject: dictionary, options: JSONSerialization.WritingOptions()) {
+                return data
+            }
         case .Array(let array):
-            return try? JSONSerialization.data(withJSONObject: array, options: JSONSerialization.WritingOptions())
+            if let data = try? JSONSerialization.data(withJSONObject: array, options: JSONSerialization.WritingOptions()) {
+                return data
+            }
         }
+        return Data(capacity: 0)
     }
     
-    public var array : [Any]! {
+    public var array : [Any]? {
         switch (self) {
         case .Dictionary(_):
             return nil
@@ -115,7 +123,7 @@ public enum JSON : DataConvertible, DataRepresentable {
         }
     }
     
-    public var dictionary : [String:Any]! {
+    public var dictionary : [String:Any]? {
         switch (self) {
         case .Dictionary(let dictionary):
             return dictionary

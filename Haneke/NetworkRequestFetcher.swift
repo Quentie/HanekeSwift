@@ -24,9 +24,9 @@ import UIKit
  */
 
 public class NetworkRequestFetcher<T : DataConvertible> : NetworkFetcher<T> {
-    let request: NSURLRequest
+    let request: URLRequest
     
-    public init(request : NSURLRequest) {
+    public init(request : URLRequest) {
         self.request = request
         guard let url = request.url else {
             fatalError("Haneke Image loader: can't load image request without URL")
@@ -37,11 +37,11 @@ public class NetworkRequestFetcher<T : DataConvertible> : NetworkFetcher<T> {
     public override func fetch(failure fail : @escaping ((Error?) -> ()), success succeed : @escaping (T.Result) -> ()) {
         self.cancelled = false
         
-        self.task = self.session.dataTask(with: self.request as! URLRequest, completionHandler: { [weak self] (data, response, error) -> Void in
+        self.task = self.session.dataTask(with: self.request, completionHandler: { [weak self] (data, response, error) -> Void in
             if let strongSelf = self {
                 strongSelf.onReceiveData(data: data , response: response, error: error , failure: fail, success: succeed)
             }
-            })
+        })
         self.task?.resume()
     }
 }

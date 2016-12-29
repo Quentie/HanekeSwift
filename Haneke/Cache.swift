@@ -23,7 +23,7 @@ extension HanekeGlobals {
     public struct Cache {
         
         public static let OriginalFormatName = "original"
-
+        
         public enum ErrorCode : Int {
             case ObjectNotFound = -100
             case FormatNotFound = -101
@@ -48,7 +48,7 @@ public class Cache<T: DataConvertible> where T.Result == T, T : DataRepresentabl
                                                           object: nil,
                                                           queue: OperationQueue.main,
                                                           using: { [unowned self] (notification : Notification!) -> Void in
-                self.onMemoryWarning()
+                                                            self.onMemoryWarning()
             }
         )
         
@@ -85,13 +85,13 @@ public class Cache<T: DataConvertible> where T.Result == T, T : DataRepresentabl
                 diskCache.updateAccessDate(getData: dataFromValue, key: key)
                 return fetch
             }
-
+            
             self.fetchFromDiskCache(diskCache: diskCache, key: key, memoryCache: memoryCache, failure: { error in
                 fetch.fail(error: error)
             }) { value in
                 fetch.succeed(value: value)
             }
-
+            
         } else {
             let localizedFormat = NSLocalizedString("Format %@ not found", comment: "Error description")
             let description = String(format:localizedFormat, formatName)
@@ -123,7 +123,7 @@ public class Cache<T: DataConvertible> where T.Result == T, T : DataRepresentabl
         }
         return fetch
     }
-
+    
     public func remove(key: String, formatName: String = HanekeGlobals.Cache.OriginalFormatName) {
         if let (_, memoryCache, diskCache) = self.formats[formatName] {
             memoryCache.removeObject(forKey: key as AnyObject)
@@ -147,7 +147,7 @@ public class Cache<T: DataConvertible> where T.Result == T, T : DataRepresentabl
     }
     
     // MARK: Formats
-
+    
     var formats : [String : (Format<T>, NSCache<AnyObject, AnyObject>, DiskCache)] = [:]
     
     public func addFormat(format : Format<T>) {
@@ -180,7 +180,7 @@ public class Cache<T: DataConvertible> where T.Result == T, T : DataRepresentabl
     
     func dataFromValue(value : T, format : Format<T>) -> Data? {
         if let data = format.convertToData?(value) {
-            return data 
+            return data
         }
         return value.asData()
     }
@@ -244,9 +244,9 @@ public class Cache<T: DataConvertible> where T.Result == T, T : DataRepresentabl
     }
     
     private func decompressedImageIfNeeded(value : T) -> T {
-        if let image = value as? UIImage {
-            let decompressedImage = image.hnk_decompressedImage() as? T
-            return decompressedImage!
+        if let image = value as? UIImage,
+            let decompressedImage = image.hnk_decompressedImage() as? T {
+            return decompressedImage
         }
         return value
     }
@@ -286,7 +286,7 @@ public class Cache<T: DataConvertible> where T.Result == T, T : DataRepresentabl
 
 public class BackgroundNetworkFetcher<T : DataConvertible> : NetworkFetcher<T>,URLSessionDataDelegate {
     
-    lazy var bgSession : URLSession! = ({
+    lazy var bgSession : URLSession = ({
         let sessionConfig = URLSessionConfiguration.background(withIdentifier: "com.say.bgt.\(UUID().uuidString)")
         //sessionConfig.discretionary = true
         let session = Foundation.URLSession(configuration: sessionConfig,delegate: self,delegateQueue: nil)
@@ -388,7 +388,7 @@ extension Cache {
      So now we create the request outside of Haneke, where we define the httpHeaders ourselves
      and then instead of fetching a NSURL, we fetch this NSURLRequest with our custom HTTPHeaders
      */
-    public func fetch(request : NSURLRequest, formatName : String = HanekeGlobals.Cache.OriginalFormatName,  failure fail : Fetch<T>.Failer? = nil, success succeed : Fetch<T>.Succeeder? = nil) -> Fetch<T> {
+    public func fetch(request : URLRequest, formatName : String = HanekeGlobals.Cache.OriginalFormatName,  failure fail : Fetch<T>.Failer? = nil, success succeed : Fetch<T>.Succeeder? = nil) -> Fetch<T> {
         let fetcher = NetworkRequestFetcher<T>(request: request)
         return self.fetch(fetcher: fetcher, formatName: formatName, failure: fail, success: succeed)
     }
