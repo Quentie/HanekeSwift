@@ -24,23 +24,33 @@
 import Foundation
 
 /** array of bytes, little-endian representation */
-func arrayOfBytes<T>(value:T, length:Int? = nil) -> [UInt8] {
-    let totalBytes = length ?? (MemoryLayout<T>.size * 8)
+func arrayOfBytes(value: Int, length: Int? = nil) -> [UInt8] {
+    let totalBytes = length ?? (MemoryLayout<Int>.size * 8)
     
-    let valuePointer = UnsafeMutablePointer<T>.allocate(capacity: 1)
-    valuePointer.pointee = value
-    
-    let bytesPointer = UnsafeMutablePointer<UInt8>.init(mutating: valuePointer as? UnsafeMutablePointer<UInt8>)
-    
-    var bytes = [UInt8](repeating: 0, count: totalBytes)
-    for j in 0..<min(MemoryLayout<T>.size,totalBytes) {
-        bytes[totalBytes - 1 - j] = (bytesPointer! + j).pointee
+    var _value = value
+    var bytes = [UInt8]()
+    let mask_8Bits = 0xFF
+    for i in (0..<MemoryLayout<Int>.size).reversed() {
+        bytes.insert(UInt8(_value & mask_8Bits), at: 0)
+        _value >>= 8
     }
-    
-    valuePointer.deinitialize()
-    valuePointer.deallocate(capacity: 1)
-    
     return bytes
+    
+    //    let valuePointer = UnsafeMutablePointer<T>.allocate(capacity: 1)
+    //    valuePointer.pointee = value
+    //
+    //    let bytesPointer = UnsafeMutablePointer<UInt8>.init(mutating: valuePointer as? UnsafeMutablePointer<UInt8>)
+    //
+    //    var bytes = [UInt8](repeating: 0, count: totalBytes)
+    //    for j in 0..<min(MemoryLayout<T>.size,totalBytes) {
+    ////        guard let bytesPointer = bytesPointer else { continue }
+    //        bytes[totalBytes - 1 - j] = (bytesPointer! + j).pointee
+    //    }
+    //
+    //    valuePointer.deinitialize()
+    //    valuePointer.deallocate(capacity: 1)
+    //
+    //    return bytes
 }
 
 extension Int {
